@@ -1,0 +1,30 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aiogram = "*"
+python-dotenv = "*"
+flake8 = "*"
+sqlalchemy = "*"
+alembic = "*"
+pydantic = "*"
+asyncpg = "*"
+gunicorn = "*"
+uvicorn = "*"
+fastapi = "*"
+curl-cffi = "*"
+zendriver = "*"
+pytesseract = "*"
+pillow = "*"
+beautifulsoup4 = "*"
+captcha-recognizer = "*"
+httpx = "*"
+pandas = "*"
+openpyxl = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
