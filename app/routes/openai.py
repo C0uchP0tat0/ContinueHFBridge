@@ -10,7 +10,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
 from app.adapters import get_adapter, get_adapter_for_model
-from app.adapters.glm import FIM_SYSTEM
+from app.adapters.glm import FIM_SYSTEM, AGENT_JSON_SYSTEM
 from app.config import MODEL_NAME, log
 from app.parsing.tool_calls import stream_text_as_chunks_for_client
 from app.schemas.requests import CompletionRequest, OpenAIChatRequest
@@ -156,11 +156,24 @@ async def completions(req: CompletionRequest):
     cancel_event = asyncio.Event()
     adapter = get_adapter_for_model(req.model) if req.model else get_adapter()
 
-    fim_prompt = req.prompt
+    # Qwen doesn't understand FIM format - try with reduced context (last 20 lines)
+    prompt_lines = req.prompt.split('\n')
+    if len(prompt_lines) > 20:
+        fim_prompt = '\n'.join(prompt_lines[-20:])
+    else:
+        fim_prompt = req.prompt
+
     if req.suffix:
-        fim_prompt = f"{req.prompt}[FILL_HERE]{req.suffix}"
+        fim_prompt = f"{fim_prompt}\n\nComplete the code. After this should be:\n{req.suffix}"
 
     raw = await adapter.call(fim_prompt, cancel_event=cancel_event, system_prompt=FIM_SYSTEM)
+    # Fallback: if model returns empty, try with AGENT_JSON_SYSTEM (works better for Qwen)
+    if not raw or not raw.strip():
+        log.warning("FIM: empty response from FIM_SYSTEM, retrying with AGENT_JSON_SYSTEM")
+        fim_prompt_simple = f"Complete this code:\n\n{fim_prompt}"
+        if req.suffix:
+            fim_prompt_simple = f"Complete this code. After this should be:\n{req.suffix}\n\n{fim_prompt}"
+        raw = await adapter.call(fim_prompt_simple, cancel_event=cancel_event, system_prompt=AGENT_JSON_SYSTEM)
     if not raw:
         raw = ""
 

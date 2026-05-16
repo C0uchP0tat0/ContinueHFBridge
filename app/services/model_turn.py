@@ -171,6 +171,12 @@ async def model_one_turn(
     raw_has_tool_pattern = bool(
         raw and ('"tool_calls"' in raw or "TOOL_NAME:" in raw or '"name":' in raw)
     )
+    # Additional check: if adapter is GLM, skip synthetic tool calls (GLM has issues with hallucinated operations)
+    is_glm = "glm" in model_name.lower()
+    if is_glm:
+        log.info("model_one_turn: GLM model detected, skipping synthetic tool calls")
+        raw_has_tool_pattern = True  # Force skip synthetic for GLM
+    
     if not tool_calls and raw_has_tool_pattern:
         log.warning("model_one_turn: raw has tool patterns but parsing failed; NOT applying synthetic")
     parsed_before_synth = list(tool_calls)

@@ -189,7 +189,12 @@ def validate_and_fix_tool_calls(
                     args[req_arg] = spec.get("default", [])
                 elif t == "object":
                     args[req_arg] = spec.get("default", {})
-                log.info("validate_tool_calls: filled missing arg %s for %s", req_arg, name)
+
+        # Special case: edit_existing_file requires non-empty changes
+        if name == "edit_existing_file":
+            if not args.get("changes") or not str(args["changes"]).strip():
+                args["changes"] = "Please describe the changes to make"
+                log.warning("validate_tool_calls: edit_existing_file had empty changes, set placeholder")
 
         # Remove args not in schema
         if props:
