@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  continue-hf-bridge:
+    build: .
+    container_name: continue-hf-bridge
+    ports:
+      - "11434:11434"
+    volumes:
+      - .:/app  # Mount source code for hot reload
+    environment:
+      - ADAPTER=glm
+      - HOST=0.0.0.0
+      - PORT=11434
+      - MODEL_NAME=glm-4-5
+      - GLM_ENDPOINT=https://zai-org-glm-4-5-space.hf.space/gradio_api
+      - QWEN_ENDPOINT=https://qwen-qwen3-vl-235b-a22b-instruct-demo.hf.space/gradio_api
+    restart: unless-stopped

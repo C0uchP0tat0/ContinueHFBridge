@@ -192,9 +192,25 @@ def validate_and_fix_tool_calls(
 
         # Special case: edit_existing_file requires non-empty changes
         if name == "edit_existing_file":
-            if not args.get("changes") or not str(args["changes"]).strip():
+            changes = str(args.get("changes", ""))
+            if not changes or not changes.strip():
                 args["changes"] = "Please describe the changes to make"
                 log.warning("validate_tool_calls: edit_existing_file had empty changes, set placeholder")
+            # Reject suspiciously short changes that could empty files
+            elif len(changes.strip()) < 10:
+                log.warning("validate_tool_calls: edit_existing_file has suspiciously short changes (len=%s), skipping tool call", len(changes))
+                continue  # Skip this tool call entirely
+
+        # Special case: create_new_file requires non-empty contents
+        if name == "create_new_file":
+            contents = str(args.get("contents", ""))
+            if not contents or not contents.strip():
+                args["contents"] = "# Empty file - please add content"
+                log.warning("validate_tool_calls: create_new_file had empty contents, set placeholder")
+            # Reject suspiciously short contents that could create empty files
+            elif len(contents.strip()) < 10:
+                log.warning("validate_tool_calls: create_new_file has suspiciously short contents (len=%s), skipping tool call", len(contents))
+                continue  # Skip this tool call entirely
 
         # Remove args not in schema
         if props:

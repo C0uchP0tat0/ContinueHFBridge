@@ -200,6 +200,44 @@ _MODEL_TO_ADAPTER = {
 - **Gradio protocol** — both adapters use HuggingFace's Gradio SSE queue API (`/queue/join` + `/queue/data`). The Qwen adapter uses a two-step flow: `/add_text` (append user message) → `/predict` (generate response).
 - **Stateless** — no conversation state is stored server-side. Each request contains the full message history from Continue.
 
+## Testing
+
+Run the test suite:
+
+```bash
+# Install test dependencies
+pipenv install --dev
+
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/test_json_repair.py
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+```
+
+Test coverage includes:
+- JSON repair utilities (truncated JSON, markdown unwrapping, etc.)
+- Tool call validation (name aliases, argument normalization, filepath fixes)
+- Tool call parsing (JSON format, Continue plaintext format)
+
+## Docker
+
+### Using Docker Compose (recommended)
+
+```bash
+docker-compose up -d
+```
+
+### Using Docker directly
+
+```bash
+docker build -t continue-hf-bridge .
+docker run -p 11434:11434 -e ADAPTER=glm continue-hf-bridge
+```
+
 ## License
 
 MIT

@@ -44,10 +44,10 @@ AVAILABLE TOOLS (use EXACT names from AVAILABLE_TOOLS_JSON):
 - grep_search: search in files (arg: query)
 
 STRICT RULES:
-1. Output ONLY the JSON object. No markdown fences, no text before or after, no duplicates.
-2. Use EXACT tool names and argument names. filepath must be a bare relative path (e.g. "file.py", NOT "./file.py").
-3. Fill ALL required arguments from the conversation context.
-4. ONE tool_call per response. Multi-step tasks = multiple request-response cycles.
+1. CRITICAL: Output ONLY the JSON object. No text before, no text after, no markdown fences, no explanations outside JSON.
+2. CRITICAL: Make EXACTLY ONE tool call per response. Wait for the tool result before making another call.
+3. Use EXACT tool names and argument names. filepath must be a bare relative path (e.g. "file.py", NOT "./file.py").
+4. Fill ALL required arguments from the conversation context.
 5. After a TOOL_RESULT, analyze it and respond or call the next tool. Never ignore results.
 6. If a tool call FAILS, do NOT repeat the same call. Change your approach or ask the user.
 7. BEFORE creating a file: ALWAYS first use ls to check if it exists. If it exists, use edit_existing_file.
@@ -58,6 +58,9 @@ STRICT RULES:
 12. DO NOT create new files with different names when the task is to edit an existing file. Always use the exact filepath that was read or mentioned in the conversation.
 13. Make VERY small edits: change 1-2 lines at a time. If you need to add multiple imports or change a large function, do it in multiple separate edits to avoid truncation.
 14. CRITICAL: Change ONLY the minimal needed part. Example: to add an import, replace just "from selenium.common.exceptions import TimeoutException" with "from selenium.common.exceptions import TimeoutException, NoSuchElementException" — do NOT replace the entire import block.
+15. NEVER chain multiple tool calls in one response. Always wait for the user to approve each tool call before proceeding.
+
+
 """.strip()
 
 AGENT_JSON_RETRY = """

@@ -415,6 +415,25 @@ def parse_assistant_json(
         msg = ""
         tcs = obj.get("tool_calls")
 
+    # Strip explanatory text from assistant_message when tool_calls are present
+    # Models often include phrases like "I'll apply the suggested edit" which the user doesn't want
+    if tcs and isinstance(tcs, list) and len(tcs) > 0:
+        explanatory_patterns = [
+            r"^I['ll] .+",
+            r"^Let me .+",
+            r"^First,? .+",
+            r"^I need to .+",
+            r"^Now .+",
+            r"^Next,? .+",
+            r"^Then .+",
+        ]
+        import re
+        for pattern in explanatory_patterns:
+            msg = re.sub(pattern, "", msg, flags=re.IGNORECASE).strip()
+
+
+
+
     out_calls: List[Dict[str, Any]] = []
     if isinstance(tcs, list):
         for item in tcs:
